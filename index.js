@@ -63,6 +63,21 @@ async function run() {
 
     })
 
+    app.put('/review/:id', async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: ObjectId(id) }
+      const user = req.body;
+      const option = { upsert: true };
+      const updatedUser = {
+        $set: {
+          name: user.name,
+          message: user.message
+        }
+      }
+      const result = await reviewCollection.updateOne(query, updatedUser, option);
+      res.send(result)
+    })
+
     app.delete('/review/:id', async (req, res) => {
       const id = req.params.id;
       const query = { _id: ObjectId(id) };
