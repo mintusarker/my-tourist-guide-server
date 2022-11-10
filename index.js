@@ -15,21 +15,23 @@ app.use(express.json());
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASSWORD}@cluster0.dl1tykd.mongodb.net/?retryWrites=true&w=majority`;
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true, serverApi: ServerApiVersion.v1 });
 
-async function run (){
-  try{
+async function run() {
+  try {
     const serviceCollection = client.db('TouristGuide').collection('services', 'service');
+    const reviewCollection = client.db('TouristGuide').collection('reviews');
+
 
     app.get('/services', async (req, res) => {
-        const query = {}
-        const cursor = serviceCollection.find(query);
-        const services = await cursor.limit(3).toArray();
-        res.send(services);
+      const query = {}
+      const cursor = serviceCollection.find(query);
+      const services = await cursor.limit(3).toArray();
+      res.send(services);
     });
     app.get('/service', async (req, res) => {
-        const query = {}
-        const cursor = serviceCollection.find(query);
-        const services = await cursor.toArray();
-        res.send(services);
+      const query = {}
+      const cursor = serviceCollection.find(query);
+      const services = await cursor.toArray();
+      res.send(services);
     });
 
     app.get('/service/:id', async (req, res) => {
@@ -37,10 +39,21 @@ async function run (){
       const query = { _id: ObjectId(id) };
       const service = await serviceCollection.findOne(query);
       res.send(service);
-  });
+    });
+
+    //review API
+
+   
+
+    app.post('/review', async (req, res) =>{
+      const review = req.body;
+      const result = await reviewCollection.insertOne(review);
+      res.send(result);
+ 
+    })
 
   }
-  finally{
+  finally {
 
   }
 }
@@ -49,9 +62,9 @@ run().catch(error => console.error(error))
 
 
 app.get('/', (req, res) => {
-    res.send('travel guide server running')
+  res.send('travel guide server running')
 })
 
 app.listen(port, () => {
-    console.log(`Travel guide server running on ${port}`)
+  console.log(`Travel guide server running on ${port}`)
 })
