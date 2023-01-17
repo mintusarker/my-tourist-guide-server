@@ -1,6 +1,6 @@
 const express = require('express');
 const cors = require('cors');
-const jwt = require('jsonwebtoken');
+// const jwt = require('jsonwebtoken');
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 require('dotenv').config();
 
@@ -17,23 +17,23 @@ const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASSWORD}@clu
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true, serverApi: ServerApiVersion.v1 });
 
 // function for jwt token
-function verifyJWT(req, res, next) {
-  const authHeader = req.headers.authorization;
+// function verifyJWT(req, res, next) {
+//   const authHeader = req.headers.authorization;
 
-  if (!authHeader) {
-    return res.status(401).send({ message: 'unauthorized access' })
-  }
-  const token = authHeader.split(' ')[1];
+//   if (!authHeader) {
+//     return res.status(401).send({ message: 'unauthorized access' })
+//   }
+//   const token = authHeader.split(' ')[1];
 
-  jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, function(err, decoded){
-    if (err) {
-      return res.status(403).send({ message: 'Forbidden access' })
-    }
+//   jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, function(err, decoded){
+//     if (err) {
+//       return res.status(403).send({ message: 'Forbidden access' })
+//     }
 
-    req.decoded = decoded;
-    next();
-  })
-}
+//     req.decoded = decoded;
+//     next();
+//   })
+// }
 
 
 async function run() {
@@ -70,12 +70,12 @@ async function run() {
     });
 
     //review API
-    app.get('/review', verifyJWT, async (req, res) => {
-      const decoded = req.decoded;
-      // console.log(decoded)
-      if(decoded.email !== req.query.email){
-         res.status(403).send({message: 'unauthorized access'})
-      }
+    app.get('/reviews', async (req, res) => {
+      // const decoded = req.decoded;
+      // // console.log(decoded)
+      // if(decoded.email !== req.query.email){
+      //    res.status(403).send({message: 'unauthorized access'})
+      // }
 
       let query = {};
       if (req.query.email) {
@@ -97,15 +97,23 @@ async function run() {
 
     })
 
-    app.patch('/review/:id', async (req, res) => {
+    app.get('/review/:id', async (req, res) => {
+      const id = req.params.id;
+      console.log(id)
+      // const filter = { _id: id };
+      const query = { _id: ObjectId(id) };
+      const result = await reviewCollection.findOne(query);
+      res.send(result)
+  })
+
+    app.put('/review/:id', async (req, res) => {
       const id = req.params.id;
       const query = { _id: ObjectId(id) }
       const user = req.body;
       const option = { upsert: true };
       const updatedUser = {
         $set: {
-          name: user.name,
-          message: user.message
+          message: user.review,
         }
       }
       const result = await reviewCollection.updateOne(query, updatedUser, option);
